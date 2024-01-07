@@ -1,0 +1,82 @@
+body {
+    height: 100vh;
+    font-family: "Poppins", sans-serif;
+    background-color: #f9f9f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+::selection {
+    color: white;
+    background: #3498db;
+}
+
+.login-container {
+    background: #fff;
+    margin: 0.5rem;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.login-container header {
+    font-family: "Poppins", sans-serif;
+    font-size: 30px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+form {
+    display: flex;
+    width: 100%;
+    margin: auto;
+    flex-direction: column;
+}
+
+form > input {
+    padding: 1rem;
+    margin: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.login-button {
+    background-color: #3498db;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    margin: 0rem 0.5rem;
+    padding: 1rem;
+    font-size: 16px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.login-button:hover {
+    background-color: #2980b9;
+}
+
+.register-link {
+    margin-top: 15px;
+    color: #333;
+}
+
+.register-link a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.error-message {
+    color: #e74c3c;
+    margin-top: 10px;
+}
+.success-message {
+    color: #05ee20;
+    margin-top: 10px;
+}

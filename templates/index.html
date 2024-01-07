@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+
+    <title>Login | Task Manager</title>
+</head>
+
+<body>
+    <div class="login-container">
+        <header>Task Manager</header>
+
+        <form id="login">
+            <input type="text" id="username" name="username" placeholder="Username">
+            <input type="password" id="password" name="password" placeholder="Password">
+            <button class="login-button" type="submit">Login</button>
+        </form>
+
+        <p class="register-link">Don't have an account? <a href="/register">Register</a></p>
+
+        <p class="error-message" id="errorMessage"></p>
+    </div>
+
+    <script>
+        setTimeout(() => document.getElementById('errorMessage').style.display = 'none', 3000);
+
+        const access_token = localStorage.getItem('access_token');
+        console.log(access_token);
+
+        if (access_token) {
+            fetch('/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + access_token,
+                },
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if (data) {
+                        window.location.href = `${window.location.href}profile`;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        document.getElementById('login').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            console.log({ username, password });
+
+            try {
+                const response = await fetch('/profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                const data = await response.json();
+                console.log(data);
+
+                if (data.status) {
+                    localStorage.setItem('access_token', data.mssg);
+                    window.location.href = `${window.location.href}profile`;
+                } else {
+                    document.getElementById('errorMessage').innerText = data.mssg;
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('errorMessage').innerText = data.mssg;
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

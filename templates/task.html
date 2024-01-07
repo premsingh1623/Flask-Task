@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <title>Tasks</title>
+</head>
+
+<body>
+    <div class="login-container">
+        <h2>Your Tasks</h2>
+
+        <!-- Display Tasks -->
+        <div id="todolist"></div>
+
+        <!-- Task Form -->
+        <form id="taskForm">
+            <input type="text" id="text" name="text" placeholder="Enter your task">
+            <button type="submit">Add Task</button>
+        </form>
+
+        <!-- Logout Button -->
+        <button id="logoutBtn">Logout</button>
+
+        <!-- Messages -->
+        <p class="error-message" id="error"></p>
+        <p class="success-message" id="success"></p>
+
+        <!-- Edit Task Form -->
+        <form id="editTaskForm" style="display: none;">
+            <input type="text" id="editText" name="editText">
+            <button type="button" id="saveBtn" onclick="saveEditedTask()" disabled>Save</button>
+            <button type="button" onclick="cancelEdit()">Cancel</button>
+        </form>
+
+
+        <script>
+            function editTask(taskId, taskText) {
+                const editTextInput = document.getElementById('editText');
+                const saveBtn = document.getElementById('saveBtn');
+
+                editTextInput.value = taskText;
+                saveBtn.disabled = true;
+
+                // Save original text to compare later
+                editTextInput.dataset.originalText = taskText;
+
+                // Add input event listener to enable/disable the "Save" button based on changes
+                editTextInput.addEventListener('input', function () {
+                    const originalText = editTextInput.dataset.originalText;
+                    const currentText = editTextInput.value.trim();
+                    const isWhiteSpaceOnly = /^\s*$/.test(currentText);
+
+                    // Enable the "Save" button only if there are changes and not whitespace only
+                    saveBtn.disabled = currentText === originalText || isWhiteSpaceOnly;
+                });
+
+                document.getElementById('editTaskForm').style.display = 'block';
+                document.getElementById('editTaskForm').dataset.taskId = taskId;
+            }
+
+
+            function saveEditedTask() {
+                const taskId = document.getElementById('editTaskForm').dataset.taskId;
+                const newText = document.getElementById('editText').value.trim();
+
+                // Check if newText is empty and handle accordingly
+                if (!newText) {
+                    showMessage('error', 'Text is required for updating a task item');
+                    return;
+                }
+
+                // Send the edited task data to the server
+                fetch(`/update_task/${taskId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded', // Change content type
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+                    },
+                    body: `text=${encodeURIComponent(newText)}`, // Encode the text parameter
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        showMessage(data.success ? 'success' : 'error', data.message);
+                        if (data.success) {
+                            getTodo();
+                            cancelEdit();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showMessage('error', error.message);
+                    });
+            }
+
+
+            function cancelEdit() {
+                document.getElementById('editTaskForm').style.display = 'none';
+            }
+            function getTodo() {
+                fetch('/get_tasks', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const todolist = document.getElementById('todolist');
+                        todolist.innerHTML = data.status ? data.message.map((e, i) => {
+                            return (
+                                `<div id="task-${e.id}" style="display: flex; align-items: center; justify-content: space-between; flex-direction: row">
+                <p style="margin: 0.5rem">${i + 1}</p>
+                <p style="margin: 0.5rem">${e.text}</p>
+                <p style="margin: 0.5rem">${new Date(e.timestamp).toLocaleDateString('en-GB', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric'
+                                })}</p>
+                <button class="edit-btn" onclick="editTask(${e.id}, '${e.text}')">Edit</button>
+                <button class="delete-btn" onclick="deleteTask(${e.id})">Delete</button>
+            </div><hr>`
+                            );
+                        }).join('') : 'Please add todo';
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            function deleteTask(taskId) {
+                fetch(`/delete_task/${taskId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        showMessage(data.success ? 'success' : 'error', data.message);
+                        if (data.success) {
+                            getTodo();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showMessage('error', error.message);
+                    });
+            }
+
+
+            function showMessage(elementId, message) {
+                const element = document.getElementById(elementId);
+                element.innerText = message;
+                setTimeout(() => {
+                    element.innerText = '';
+                }, 2000);
+            }
+
+            if (localStorage.getItem('access_token')) {
+                fetch('/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data) {
+                            window.location.href = window.location.href.replace('/profile', '');
+                        } else {
+                            getTodo();
+                        }
+                    })
+                    .catch(error => {
+                        window.location.href = window.location.href.replace('/profile', '');
+                        console.error('Error:', error);
+                    });
+            } else {
+                window.location.href = window.location.href.replace('/profile', '');
+            }
+
+            document.getElementById('taskForm').addEventListener('submit', function (event) {
+                event.preventDefault();
+                const taskText = document.getElementById('text').value.trim();
+
+                // Check if taskText is empty after trimming whitespace
+                if (!taskText) {
+                    showMessage('error', 'Task text cannot be empty');
+                    return;
+                }
+
+                fetch('/create_task', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+                    },
+                    body: JSON.stringify({ text: taskText }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        showMessage(data.status ? 'success' : 'error', data.message);
+                        if (data.status) {
+                            getTodo();
+                            document.getElementById('text').value = '';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showMessage('error', error.message);
+                    });
+            });
+
+            // Logout Function
+            document.getElementById('logoutBtn').addEventListener('click', function () {
+                fetch('/logout', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+                    },
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            console.log(response);
+                            localStorage.removeItem('access_token');
+                            window.location.href = '/';
+                        } else {
+                            console.error('Error:', response.statusText);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        </script>
+    </div>
+</body>
+
+</html>

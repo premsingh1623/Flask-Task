@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+    <script>
+        setTimeout(() => document.querySelectorAll('.success-message, .error-message').forEach(e => e.style.display = 'none'), 3000);
+    </script>
+    <title>Register | Task Manager</title>
+</head>
+
+<body>
+    <div class="login-container">
+        <header>Task Manager</header>
+
+        <form method="POST" action="/register">
+            <input type="text" id="username" name="username" placeholder="Username">
+            <input type="password" id="password" name="password" placeholder="Password">
+            <button class="login-button" type="submit">Register</button>
+        </form>
+
+        <p class="register-link">Already have an account? <a href="/">Login</a></p>
+
+        {% if error or success %}
+        <p class="{{ 'error' if error else 'success' }}-message">
+            <strong>{{ 'Error:' if error else 'Success:' }}</strong> {{ error or success }}
+        </p>
+        {% endif %}
+    </div>
+</body>
+
+</html>
