@@ -13,23 +13,18 @@
     <div class="login-container">
         <h2>Your Tasks</h2>
 
-        <!-- Display Tasks -->
         <div id="todolist"></div>
 
-        <!-- Task Form -->
         <form id="taskForm">
             <input type="text" id="text" name="text" placeholder="Enter your task">
             <button type="submit">Add Task</button>
         </form>
 
-        <!-- Logout Button -->
         <button id="logoutBtn">Logout</button>
 
-        <!-- Messages -->
         <p class="error-message" id="error"></p>
         <p class="success-message" id="success"></p>
 
-        <!-- Edit Task Form -->
         <form id="editTaskForm" style="display: none;">
             <input type="text" id="editText" name="editText">
             <button type="button" id="saveBtn" onclick="saveEditedTask()" disabled>Save</button>
@@ -45,16 +40,13 @@
                 editTextInput.value = taskText;
                 saveBtn.disabled = true;
 
-                // Save original text to compare later
                 editTextInput.dataset.originalText = taskText;
 
-                // Add input event listener to enable/disable the "Save" button based on changes
                 editTextInput.addEventListener('input', function () {
                     const originalText = editTextInput.dataset.originalText;
                     const currentText = editTextInput.value.trim();
                     const isWhiteSpaceOnly = /^\s*$/.test(currentText);
 
-                    // Enable the "Save" button only if there are changes and not whitespace only
                     saveBtn.disabled = currentText === originalText || isWhiteSpaceOnly;
                 });
 
@@ -67,20 +59,18 @@
                 const taskId = document.getElementById('editTaskForm').dataset.taskId;
                 const newText = document.getElementById('editText').value.trim();
 
-                // Check if newText is empty and handle accordingly
                 if (!newText) {
                     showMessage('error', 'Text is required for updating a task item');
                     return;
                 }
 
-                // Send the edited task data to the server
                 fetch(`/update_task/${taskId}`, {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded', // Change content type
+                        'Content-Type': 'application/x-www-form-urlencoded',
                         'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
                     },
-                    body: `text=${encodeURIComponent(newText)}`, // Encode the text parameter
+                    body: `text=${encodeURIComponent(newText)}`,
                 })
                     .then(response => response.json())
                     .then(data => {
@@ -187,8 +177,6 @@
             document.getElementById('taskForm').addEventListener('submit', function (event) {
                 event.preventDefault();
                 const taskText = document.getElementById('text').value.trim();
-
-                // Check if taskText is empty after trimming whitespace
                 if (!taskText) {
                     showMessage('error', 'Task text cannot be empty');
                     return;
@@ -217,7 +205,6 @@
                     });
             });
 
-            // Logout Function
             document.getElementById('logoutBtn').addEventListener('click', function () {
                 fetch('/logout', {
                     method: 'GET',

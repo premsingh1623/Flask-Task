@@ -1,5 +1,5 @@
 from flask import jsonify, request, render_template, redirect, url_for
-from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity, unset_jwt_cookies, set_access_cookies
+from flask_jwt_extended import create_access_token, get_jwt_identity, unset_jwt_cookies
 from werkzeug.security import check_password_hash, generate_password_hash
 from database import get_db
 
